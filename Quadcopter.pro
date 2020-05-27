@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui
+QT       += core gui printsupport
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -22,14 +22,34 @@ DEFINES += QT_DEPRECATED_WARNINGS
 # You can also select to disable deprecated APIs only up to a certain version of Qt.
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
+
+INCLUDEPATH += "./libs/eigen"
+INCLUDEPATH += "./libs/qcustomplot"
+
 CONFIG += c++11
 
 SOURCES += \
         main.cpp \
-        mainwindow.cpp
+        mainwindow.cpp \
+    quadcopters/quadcopter.cpp \
+    quadcopters/quadcopter_pid.cpp \
+    quadcopters/controlers/pid.cpp \
+    quadcopters/controlers/pid.cpp \
+    libs/qcustomplot/qcustomplot.cpp \
+    quadcopters/blackbox.cpp
 
 HEADERS += \
-        mainwindow.h
+        mainwindow.h \
+    quadcopters/quadcopter.h \
+    quadcopters/config.h \
+    quadcopters/quadcopter_pid.h \
+    quadcopters/controlers/pid.h \
+    quadcopters/controlers/pid.h \
+    libs/qcustomplot/qcustomplot.h \
+    quadcopters/quadcopters_group.h \
+    quadcopters.h \
+    quadcopters/blackbox.h \
+    quadcopters/rotor.h
 
 FORMS += \
         mainwindow.ui
