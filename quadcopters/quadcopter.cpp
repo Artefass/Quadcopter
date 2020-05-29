@@ -4,23 +4,17 @@
 
 #include <QtMath>
 
-Quadcopter::Quadcopter():
-    rotor1(w_hower, dt),
-    rotor2(w_hower, dt),
-    rotor3(w_hower, dt),
-    rotor4(w_hower, dt)
+Quadcopter::Quadcopter()
 {
     u_desired << m*g, 0, 0, 0;
     u_current = u_desired;
 
     xyz << 0, 0, 1;
     xyz_desired = xyz;
-    xyz_desired_previous = xyz;
-    xyz_velocity = xyz;
+    xyz_velocity << 0.0, 0.0, 0.0;
 
     attitude << 0, 0, 0;
     attitude_desired = attitude;
-    attitude_desired_previos = attitude;
 
     pqr << 0.0, 0.0, 0.0;
 
@@ -31,16 +25,22 @@ Quadcopter::Quadcopter():
              -l*k,    0, l*k,   0,
                -b,    b,  -b,   b;
 
-
-
     u_to_w2 = w2_to_u.inverse();
     w2_desired = u_to_w2 * u_desired;
     w2 = w2_desired;
 
-    std::cout << "w2_desired: " << w2_desired << std::endl;
-    std::cout << "w2        : " << w2 << std::endl;
-    std::cout << "u_to_w2   : " << u_to_w2 << std::endl;
-    std::cout << "w2_to_u   : " << w2_to_u << std::endl;
+    // debug information
+
+//    std::cout << "w2_desired: " << w2_desired.transpose() << std::endl;
+//    std::cout << "w2        : " << w2.transpose() << std::endl;
+//    std::cout << "u_to_w2   : " << u_to_w2 << std::endl;
+//    std::cout << "w2_to_u   : " << w2_to_u << std::endl;
+//    std::cout << "w hower   : " << howerW << std::endl;
+//    std::cout << "w hower^2 : " << howerW * howerW << std::endl;
+//    std::cout << "w min     : " << minW << std::endl;
+//    std::cout << "w min^2   : " << minW * minW << std::endl;
+//    std::cout << "w max     : " << maxW << std::endl;
+//    std::cout << "w max^2   : " << maxW * maxW << std::endl;
 }
 
 void Quadcopter::StepRotors() {
@@ -71,8 +71,19 @@ void Quadcopter::StepRotors() {
 
     w2_desired = u_to_w2 * u_desired;
 
-    Vector4d w_delta = kw * (w2_desired - w2) * dt;
-    w2 += w_delta;
+    // ограничение квадрата скорости по движкам
+    for (int i = 0; i < w2_desired.size(); i++) {
+        if (w2_desired(i) > maxW * maxW) {
+            w2_desired(i) = maxW * maxW;
+        }
+        if (w2_desired(i) < minW * minW) {
+            w2_desired(i) = minW * minW;
+        }
+    }
+
+    // имитация расрутки двигателя
+    Vector4d w2_delta = kw * (w2_desired - w2) * dt;
+    w2 += w2_delta;
 
     w(0) = qSqrt(w2(0));
     w(1) = qSqrt(w2(1));
@@ -81,14 +92,16 @@ void Quadcopter::StepRotors() {
 
 //    w_r = qSqrt(qAbs(w[1])) + qSqrt(qAbs(w[3])) - qSqrt(qAbs(w[0])) - qSqrt(qAbs(w[2]));
 
-    std::cout << "StepRotor" << std::endl;
-    std::cout << "\t w2_desired: " << w2_desired.transpose() << std::endl;
-//    std::cout << "\t w_desired: " << w_desired.transpose() << std::endl;
-    std::cout << "\t w_delta  : " << w_delta.transpose() << std::endl;
-//    std::cout << "\t sub_w    : " << (w_desired - w).transpose() << std::endl;
-    std::cout << "\t w        : " << w.transpose() << std::endl;
-    std::cout << "\t w2       : " << w2.transpose() << std::endl;
-    std::cout << "\t w_r      : " << w_r << std::endl;
+    // debug information
+
+//    std::cout << "StepRotor" << std::endl;
+//    std::cout << "\t w2_desired: " << w2_desired.transpose() << std::endl;
+////    std::cout << "\t w_desired: " << w_desired.transpose() << std::endl;
+//    std::cout << "\t w_delta  : " << w2_delta.transpose() << std::endl;
+////    std::cout << "\t sub_w    : " << (w_desired - w).transpose() << std::endl;
+//    std::cout << "\t w        : " << w.transpose() << std::endl;
+//    std::cout << "\t w2       : " << w2.transpose() << std::endl;
+//    std::cout << "\t w_r      : " << w_r << std::endl;
 }
 
 void Quadcopter::StepModel() {
@@ -106,21 +119,15 @@ void Quadcopter::StepModel() {
     double theta_dot = pqr(1);
     double psi_dot   = pqr(2);
 
-    std::cout << "phi_dot: " << phi_dot << std::endl;
-    std::cout << "theta_dot: " << theta_dot << std::endl;
-    std::cout << "psi_dot: " << psi_dot << std::endl;
-
+    // пока избавился от гироскопических сил
     double phi_dot_dot   = (theta_dot * psi_dot * (Iy - Iz) /* - Ir * theta_dot * w_r */ + u_current(1)) / Ix;
     double theta_dot_dot = (phi_dot   * psi_dot * (Iz - Ix) /* + Ir * phi_dot   * w_r */ + u_current(2)) / Iy;
     double psi_dot_dot   = (phi_dot * theta_dot * (Ix - Iy) + u_current(3)) / Iz;
 
+    // сохраняю ускорения для записи в лог
     attitude_acceleration(0) = phi_dot_dot;
     attitude_acceleration(1) = theta_dot_dot;
     attitude_acceleration(2) = psi_dot_dot;
-
-    std::cout << "phi_dot_dot: " << phi_dot_dot << std::endl;
-    std::cout << "theta_dot_dot: " << theta_dot_dot << std::endl;
-    std::cout << "psi_dot_dot: " << psi_dot_dot << std::endl;
 
     // position
 
@@ -149,12 +156,23 @@ void Quadcopter::StepModel() {
     xyz_velocity += xyz_acceleration * dt;
     xyz += xyz_velocity*dt;
 
-    std::cout << "Step:" << std::endl;
-    std::cout << "\t u_current: " << u_current.transpose() << std::endl;
-    std::cout << "\t pqr_dot  : " << pqr_dot.transpose() << std::endl;
-    std::cout << "\t pqr      : " << pqr.transpose() << std::endl;
-    std::cout << "\t xyz_accel: " << xyz_acceleration.transpose() << std::endl;
-    std::cout << "\t xyz_veloc: " << xyz_velocity.transpose() << std::endl;
+    // debug info
+
+//    std::cout << "Step:" << std::endl;
+
+//    std::cout << "phi_dot  : " << phi_dot << std::endl;
+//    std::cout << "theta_dot: " << theta_dot << std::endl;
+//    std::cout << "psi_dot  : " << psi_dot << std::endl;
+
+//    std::cout << "phi_dot_dot  : " << phi_dot_dot << std::endl;
+//    std::cout << "theta_dot_dot: " << theta_dot_dot << std::endl;
+//    std::cout << "psi_dot_dot  : " << psi_dot_dot << std::endl;
+
+//    std::cout << "\t u_current: " << u_current.transpose() << std::endl;
+//    std::cout << "\t pqr_dot  : " << pqr_dot.transpose() << std::endl;
+//    std::cout << "\t pqr      : " << pqr.transpose() << std::endl;
+//    std::cout << "\t xyz_accel: " << xyz_acceleration.transpose() << std::endl;
+//    std::cout << "\t xyz_veloc: " << xyz_velocity.transpose() << std::endl;
 }
 
 void Quadcopter::Reset() {
@@ -172,27 +190,28 @@ void Quadcopter::Reset() {
     u_current = u_desired;
 
     w2_desired = u_to_w2 * u_desired;
-    w2 = w2_desired;
+
+    for (int i = 0; i < w.size(); i++) {
+        w(i) = howerW;
+        w2(i) = howerW * howerW;
+    }
 
     blackBox.Reset();
 
-    std::cout << "Reset: " << std::endl;
-    std::cout << "\t xyz         : " << xyz.transpose() << std::endl;
-    std::cout << "\t xyz_velocity: " << xyz_velocity.transpose() << std::endl;
-    std::cout << "\t attitude    : " << attitude.transpose() << std::endl;
-    std::cout << "\t pqr         : " << pqr.transpose() << std::endl;
-    std::cout << "\t w           : " << w.transpose() << std::endl;
-    std::cout << "\t attitude_acc: " << attitude_acceleration << std::endl;
+      // debug info
+//    std::cout << "Reset: " << std::endl;
+//    std::cout << "\t xyz         : " << xyz.transpose() << std::endl;
+//    std::cout << "\t xyz_velocity: " << xyz_velocity.transpose() << std::endl;
+//    std::cout << "\t attitude    : " << attitude.transpose() << std::endl;
+//    std::cout << "\t pqr         : " << pqr.transpose() << std::endl;
+//    std::cout << "\t w           : " << w.transpose() << std::endl;
+//    std::cout << "\t w2          : " << w2.transpose() << std::endl;
+//    std::cout << "\t w2_desired  : " << w2_desired.transpose() << std::endl;
+//    std::cout << "\t attitude_acc: " << attitude_acceleration << std::endl;
+//    std::cout << "\t attitude_acc: " << attitude_acceleration << std::endl;
 }
 
 void Quadcopter::SaveState() {
-    std::cout << "SaveState: " << std::endl;
-    std::cout << "\t xyz         : " << xyz.transpose() << std::endl;
-    std::cout << "\t xyz_velocity: " << xyz_velocity.transpose() << std::endl;
-    std::cout << "\t attitude    : " << attitude.transpose() << std::endl;
-    std::cout << "\t pqr         : " << pqr.transpose() << std::endl;
-    std::cout << "\t rotors_w    : " << w.transpose() << std::endl;
-
     blackBox.SetAngles(attitude(0), attitude(1), attitude(2));
     blackBox.SetPosition(xyz(0), xyz(1), xyz(2));
     blackBox.SetTime(currentTime);
@@ -203,16 +222,13 @@ void Quadcopter::SaveState() {
     blackBox.SetRollPitchYawAccelerations(attitude_acceleration(0), attitude_acceleration(1), attitude_acceleration(2));
 
 
-//        xyz_log.push_back(xyz);
-
-//        Vector3d attitudeInDegree;
-//        attitudeInDegree << qRadiansToDegrees(attitude[0]), qRadiansToDegrees(attitude[1]), qRadiansToDegrees(attitude[2]);
-//        attitude_degree_log.push_back(attitudeInDegree);
-
-//        attitude_radian_log.push_back(attitude);
-
-//        u_current_log.push_back(u_current);
-//        w_log.push_back(w);
+    // debug info
+//    std::cout << "SaveState: " << std::endl;
+//    std::cout << "\t xyz         : " << xyz.transpose() << std::endl;
+//    std::cout << "\t xyz_velocity: " << xyz_velocity.transpose() << std::endl;
+//    std::cout << "\t attitude    : " << attitude.transpose() << std::endl;
+//    std::cout << "\t pqr         : " << pqr.transpose() << std::endl;
+//    std::cout << "\t rotors_w    : " << w.transpose() << std::endl;
 }
 
 

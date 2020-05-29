@@ -3,6 +3,8 @@
 
 #include <QMainWindow>
 
+//#include "quadcopters/quadcopters_group.h"
+
 namespace Ui {
 class MainWindow;
 }
@@ -18,8 +20,12 @@ public:
 private slots:
     void on_startSimulationButton_clicked();
 
+    void on_pushButton_5_clicked();
+
 private:
     Ui::MainWindow *ui;
+
+//    QuadcoptersGroup Quadcopters;
 };
 
 #endif // MAINWINDOW_H

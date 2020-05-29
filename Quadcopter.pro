@@ -48,8 +48,7 @@ HEADERS += \
     libs/qcustomplot/qcustomplot.h \
     quadcopters/quadcopters_group.h \
     quadcopters.h \
-    quadcopters/blackbox.h \
-    quadcopters/rotor.h
+    quadcopters/blackbox.h
 
 FORMS += \
         mainwindow.ui

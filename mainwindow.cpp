@@ -1,7 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
-#include "quadcopters/quadcopter_pid.h"
 #include "quadcopters.h"
 
 #include <QtMath>
@@ -28,6 +27,20 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->controlRollPlot->legend->setVisible(true);
     ui->controlPitchPlot->legend->setVisible(true);
     ui->controlYawPlot->legend->setVisible(true);
+
+    // PID method
+
+    ui->rollKpSpinBox->setValue(Quadcopters.quadcopterPID.phiPID.GetKp());
+    ui->rollKiSpinBox->setValue(Quadcopters.quadcopterPID.phiPID.GetKi());
+    ui->rollKdSpinBox->setValue(Quadcopters.quadcopterPID.phiPID.GetKd());
+
+    ui->pitchKpSpinBox->setValue(Quadcopters.quadcopterPID.thetaPID.GetKp());
+    ui->pitchKiSpinBox->setValue(Quadcopters.quadcopterPID.thetaPID.GetKi());
+    ui->pitchKdSpinBox->setValue(Quadcopters.quadcopterPID.thetaPID.GetKd());
+
+    ui->yawKpSpinBox->setValue(Quadcopters.quadcopterPID.psiPID.GetKp());
+    ui->yawKiSpinBox->setValue(Quadcopters.quadcopterPID.psiPID.GetKi());
+    ui->yawKdSpinBox->setValue(Quadcopters.quadcopterPID.psiPID.GetKd());
 }
 
 MainWindow::~MainWindow()
@@ -100,4 +113,21 @@ void MainWindow::on_startSimulationButton_clicked()
     Quadcopters.PlotYawControl(ui->controlYawPlot);
 }
 
-void Plot();
+void MainWindow::on_pushButton_5_clicked()
+{
+    double rollKp = ui->rollKpSpinBox->value();
+    double rollKi = ui->rollKiSpinBox->value();
+    double rollKd = ui->rollKdSpinBox->value();
+
+    double pitchKp = ui->pitchKpSpinBox->value();
+    double pitchKi = ui->pitchKiSpinBox->value();
+    double pitchKd = ui->pitchKdSpinBox->value();
+
+    double yawKp = ui->yawKpSpinBox->value();
+    double yawKi = ui->yawKiSpinBox->value();
+    double yawKd = ui->yawKdSpinBox->value();
+
+    Quadcopters.quadcopterPID.phiPID.SetKpKiKd(rollKp, rollKi, rollKd);
+    Quadcopters.quadcopterPID.thetaPID.SetKpKiKd(pitchKp, pitchKi, pitchKd);
+    Quadcopters.quadcopterPID.psiPID.SetKpKiKd(yawKp, yawKi, yawKd);
+}

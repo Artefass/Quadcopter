@@ -8,21 +8,21 @@
 
 class QuadcopterPID: public Quadcopter
 {
+public:
     PID phiPID;
     PID thetaPID;
     PID psiPID;
 
-public:
     QuadcopterPID() :
         Quadcopter(),
-        phiPID(dt, 10.0, 1.0, 0.1, 0.0, 0.05),
-        thetaPID(dt, 10.0, 1.0, 0.1, 0.0, 0.05),
-        psiPID(dt, 10.0, 1.0, 0.05, 0.0, 0.07)
+        phiPID(dt, 0.0, 0.0, 0.3, 0.475, 0.11875),
+        thetaPID(dt, 0.0, 0.0, 0.3, 0.475, 0.11875),
+        psiPID(dt, 0.0, 0.0, 0.3, 0.475, 0.11875)
     {
 
     }
 
-    void InitTimeStepSimulation(double timeStep) {
+    void InitTimeStepSimulation(double timeStep) override {
         phiPID.Setdt(timeStep);
         thetaPID.Setdt(timeStep);
         psiPID.Setdt(timeStep);
@@ -41,7 +41,8 @@ public:
         std::cout << "u_desired: " << u_desired.transpose() << std::endl;
     }
 
-    void Reset() {
+    void Reset() override {
+        std::cout << "ResetPID" << std::endl;
         phiPID.Reset();
         thetaPID.Reset();
         psiPID.Reset();

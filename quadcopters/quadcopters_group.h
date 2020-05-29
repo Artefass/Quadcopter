@@ -38,6 +38,35 @@ struct QuadcoptersGroup {
             std::array<double, 3> startPosition,
             std::array<double, 3> startAttitude)
     {
+        Clear();
+
+        quadcopterPID.Init(
+                    dt,
+                    startPosition[0], startPosition[1], startPosition[2],
+                    startAttitude[0], startAttitude[1], startAttitude[2]);
+
+        double currentTime = 0;
+        std::array<double, 3> desiredPosition = GenDesiredPosition(currentTime);
+        std::array<double, 3> desiredAttitude = GenDesiredAttitude(currentTime);
+
+        SaveDesiredValue(currentTime, desiredPosition, desiredAttitude);
+
+        while (currentTime < timeEnd) {
+            currentTime += dt;
+
+            desiredPosition = GenDesiredPosition(currentTime);
+            desiredAttitude = GenDesiredAttitude(currentTime);
+
+            SaveDesiredValue(currentTime, desiredPosition, desiredAttitude);
+
+            quadcopterPID.SetDesiredAttitude(desiredAttitude[0], desiredAttitude[1], desiredAttitude[2]);
+            quadcopterPID.Step();
+        }
+
+    }
+
+
+    void Clear() {
         DesiredX.clear();
         DesiredY.clear();
         DesiredZ.clear();
@@ -47,33 +76,18 @@ struct QuadcoptersGroup {
         DesiredYaw.clear();
 
         SavedTimeSteps.clear();
+    }
 
-        quadcopterPID.Reset();
-        quadcopterPID.InitTimeStepSimulation(dt);
-        quadcopterPID.InitPosition(startPosition[0], startPosition[1], startPosition[2]);
-        quadcopterPID.InitAttitude(startAttitude[0], startAttitude[1], startAttitude[2]);
+    void SaveDesiredValue(double currentTime, std::array<double, 3> position, std::array<double, 3> attitude) {
+        SavedTimeSteps.push_back(currentTime);
 
-        double currentTime = 0;
-        while (currentTime < timeEnd) {
-            currentTime += dt;
+        DesiredX.push_back(position[0]);
+        DesiredY.push_back(position[1]);
+        DesiredZ.push_back(position[2]);
 
-            SavedTimeSteps.push_back(currentTime);
-
-            std::array<double, 3> desiredPosition = GenDesiredPosition(currentTime);
-            std::array<double, 3> desiredAttitude = GenDesiredAttitude(currentTime);
-
-            DesiredX.push_back(desiredPosition[0]);
-            DesiredY.push_back(desiredPosition[1]);
-            DesiredZ.push_back(desiredPosition[2]);
-
-            DesiredRoll.push_back(desiredAttitude[0]);
-            DesiredPitch.push_back(desiredAttitude[1]);
-            DesiredYaw.push_back(desiredAttitude[2]);
-
-            quadcopterPID.SetDesiredAttitude(desiredAttitude[0], desiredAttitude[1], desiredAttitude[2]);
-            quadcopterPID.Step();
-        }
-
+        DesiredRoll.push_back(attitude[0]);
+        DesiredPitch.push_back(attitude[1]);
+        DesiredYaw.push_back(attitude[2]);
     }
 
     void Plot(
@@ -139,14 +153,14 @@ struct QuadcoptersGroup {
     void PlotRoll(QCustomPlot *plot) {
         QVector<QString> legends = {
             "Desired",
-            "PID",
-            "PID-v",
-            "PID-a"
+            "PID"
+//            "PID-v",
+//            "PID-a"
         };
         QVector<QVector<double>> quadcoptersRolls;
         quadcoptersRolls.push_back(DesiredRoll);
         quadcoptersRolls.push_back(quadcopterPID.blackBox.GetRollInfo());
-        quadcoptersRolls.push_back(quadcopterPID.blackBox.GetRollVelocityInfo());
+        //quadcoptersRolls.push_back(quadcopterPID.blackBox.GetRollVelocityInfo());
         //quadcoptersRolls.push_back(quadcopterPID.blackBox.GetRollAccelerationInfo());
         Plot(plot, legends, SavedTimeSteps, quadcoptersRolls);
     }
@@ -154,30 +168,30 @@ struct QuadcoptersGroup {
     void PlotPitch(QCustomPlot *plot) {
         QVector<QString> legends = {
             "Desired",
-            "PID",
-            "PID-v",
-            "PID-a"
+            "PID"
+//            "PID-v",
+//            "PID-a"
         };
         QVector<QVector<double>> quadcoptersPitches;
         quadcoptersPitches.push_back(DesiredPitch);
         quadcoptersPitches.push_back(quadcopterPID.blackBox.GetPitchInfo());
-        quadcoptersPitches.push_back(quadcopterPID.blackBox.GetPitchVelocityInfo());
-        quadcoptersPitches.push_back(quadcopterPID.blackBox.GetPitchAccelerationInfo());
+//        quadcoptersPitches.push_back(quadcopterPID.blackBox.GetPitchVelocityInfo());
+//        quadcoptersPitches.push_back(quadcopterPID.blackBox.GetPitchAccelerationInfo());
         Plot(plot, legends, SavedTimeSteps, quadcoptersPitches);
     }
 
     void PlotYaw(QCustomPlot *plot) {
         QVector<QString> legends = {
             "Desired",
-            "PID",
-            "PID-v",
-            "PID-a"
+            "PID"
+//            "PID-v",
+//            "PID-a"
         };
         QVector<QVector<double>> quadcoptersYaws;
         quadcoptersYaws.push_back(DesiredYaw);
         quadcoptersYaws.push_back(quadcopterPID.blackBox.GetYawInfo());
-        quadcoptersYaws.push_back(quadcopterPID.blackBox.GetYawVelocityInfo());
-        quadcoptersYaws.push_back(quadcopterPID.blackBox.GetYawAccelerationInfo());
+//        quadcoptersYaws.push_back(quadcopterPID.blackBox.GetYawVelocityInfo());
+//        quadcoptersYaws.push_back(quadcopterPID.blackBox.GetYawAccelerationInfo());
         Plot(plot, legends, SavedTimeSteps, quadcoptersYaws);
     }
 

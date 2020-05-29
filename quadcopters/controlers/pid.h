@@ -2,6 +2,7 @@
 #define PID_H
 
 #include <QtMath>
+#include <iostream>
 
 const double error_epsilon = 1.0;
 
@@ -82,7 +83,14 @@ public:
             control = maxControl * sign;
         }
 
+        std::cout << "P I D (" << P << " " << I << " " << D << ")" << std::endl;
+        std::cout << "error (" << error << ")" << std::endl;
+        std::cout << "prev_error (" << previousError << ")" << std::endl;
+        std::cout << "dt    (" << dt << ")" << std::endl;
+
         previousError = error;
+
+
         return control;
     }
 };
