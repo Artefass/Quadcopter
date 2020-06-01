@@ -261,46 +261,13 @@
      </widget>
     </widget>
    </widget>
-   <widget class="QWidget" name="gridLayoutWidget">
-    <property name="geometry">
-     <rect>
-      <x>910</x>
-      <y>0</y>
-      <width>311</width>
-      <height>41</height>
-     </rect>
-    </property>
-    <layout class="QGridLayout" name="gridLayout">
-     <item row="1" column="0">
-      <widget class="QCheckBox" name="checkBox">
-       <property name="text">
-        <string>Включить</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="1">
-      <widget class="QLabel" name="label_3">
-       <property name="text">
-        <string>ПИД-регулятор</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="1">
-      <widget class="QLabel" name="label_2">
-       <property name="text">
-        <string>Методы</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </widget>
    <widget class="QWidget" name="gridLayoutWidget_2">
     <property name="geometry">
      <rect>
       <x>910</x>
-      <y>250</y>
+      <y>160</y>
       <width>311</width>
-      <height>481</height>
+      <height>556</height>
      </rect>
     </property>
     <layout class="QGridLayout" name="gridLayout_2">
@@ -335,7 +302,7 @@
      <item row="12" column="0">
       <widget class="QLabel" name="label_15">
        <property name="text">
-        <string>Тангаж (град)</string>
+        <string>Тангаж (градусы)</string>
        </property>
       </widget>
      </item>
@@ -376,7 +343,7 @@
      <item row="13" column="0">
       <widget class="QLabel" name="label_16">
        <property name="text">
-        <string>Рысканье (град)</string>
+        <string>Рысканье (градусы)</string>
        </property>
       </widget>
      </item>
@@ -447,7 +414,7 @@
         <double>0.000100000000000</double>
        </property>
        <property name="value">
-        <double>0.050000000000000</double>
+        <double>2.000000000000000</double>
        </property>
       </widget>
      </item>
@@ -482,7 +449,7 @@
      <item row="11" column="0">
       <widget class="QLabel" name="label_14">
        <property name="text">
-        <string>Крен (град)</string>
+        <string>Крен (градусы)</string>
        </property>
       </widget>
      </item>
@@ -561,7 +528,7 @@
     <property name="geometry">
      <rect>
       <x>910</x>
-      <y>90</y>
+      <y>0</y>
       <width>311</width>
       <height>141</height>
      </rect>
